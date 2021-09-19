@@ -99,7 +99,7 @@ extern const uint8_t usb_config_descriptor_12[];
 void (*usb_timer0_callback)(void) = NULL;
 void (*usb_timer1_callback)(void) = NULL;
 
-static void isr(void);
+void usb_isr(void);
 static void endpoint0_setup(uint64_t setupdata);
 static void endpoint0_transmit(const void *data, uint32_t len, int notify);
 static void endpoint0_receive(void *data, uint32_t len, int notify);
@@ -193,7 +193,7 @@ FLASHMEM void usb_init(void)
 	USB1_USBINTR = USB_USBINTR_UE | USB_USBINTR_UEE | /* USB_USBINTR_PCE | */
 		USB_USBINTR_URE | USB_USBINTR_SLE;
 	//_VectorsRam[IRQ_USB1+16] = &isr;
-	attachInterruptVector(IRQ_USB1, &isr);
+	attachInterruptVector(IRQ_USB1, &usb_isr);
 	NVIC_ENABLE_IRQ(IRQ_USB1);
 	//printf("USB1_ENDPTCTRL0=%08lX\n", USB1_ENDPTCTRL0);
 	//printf("USB1_ENDPTCTRL1=%08lX\n", USB1_ENDPTCTRL1);
@@ -206,7 +206,7 @@ FLASHMEM void usb_init(void)
 }
 
 
-static void isr(void)
+void usb_isr(void)
 {
 	//printf("*");
 
@@ -732,6 +732,7 @@ static void endpoint0_receive(void *data, uint32_t len, int notify)
 static void endpoint0_complete(void)
 {
 	setup_t setup;
+	(void) setup;
 
 	setup.bothwords = endpoint0_setupdata.bothwords;
 	//printf("complete %x %x %x\n", setup.word1, setup.word2, endpoint0_buffer[0]);
